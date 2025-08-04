@@ -24,19 +24,18 @@ POST {{ContosoPizza_HostAddress}}/pizza/
 Content-Type: application/json
 
 {
-    
-    "name": "Hawaii",
+    "id" : 55,
+    "name": "Hawaiiiiii",
     "isGlutenFree": false
 }
 
 ###
 
-PUT {{ContosoPizza_HostAddress}}/pizza/3
+PUT {{ContosoPizza_HostAddress}}/pizza/1
 Content-Type: application/json
 
 {
-    "id": 3,
-    "name": "Hawaiian-gluten",
+    "name": "Bhatt",
     "isGlutenFree": true
 }
 

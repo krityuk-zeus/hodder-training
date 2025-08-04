@@ -8,17 +8,20 @@ namespace ContosoPizza.Controllers;
 [Route("[controller]")]
 public class PizzaController : ControllerBase
 {
-    public PizzaController()
+    private readonly PizzaService _pizzaService;
+    public PizzaController(PizzaService pizzaService)
     {
+        _pizzaService = pizzaService;
     }
 
     /// <summary>
-    /// Retrieves the list of all pizzas.
+    /// Retrieves the list of all pizzas.  
+    /// This endpoint is used to get all available pizzas.
     /// </summary>
     /// <returns>A list of pizzas.</returns>
     [HttpGet]
     public ActionResult<List<Pizza>> GetAll() =>
-        PizzaService.GetAll();
+        _pizzaService.GetAll();
 
     /// <summary>
     /// Retrieves a specific pizza by its ID.
@@ -28,7 +31,7 @@ public class PizzaController : ControllerBase
     [HttpGet("{id}")]
     public ActionResult<Pizza> Get(int id)
     {
-        var pizza = PizzaService.Get(id);
+        var pizza = _pizzaService.Get(id);
         if (pizza == null)
             return NotFound();
 
@@ -43,7 +46,7 @@ public class PizzaController : ControllerBase
     [HttpPost]
     public IActionResult Create(Pizza pizza)
     {
-        PizzaService.Add(pizza);
+        _pizzaService.Add(pizza);
         return CreatedAtAction(nameof(Get), new { id = pizza.Id }, pizza);
     }
 
@@ -56,16 +59,13 @@ public class PizzaController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult Update(int id, Pizza pizza)
     {
-        if (id != pizza.Id)
-            return BadRequest();
-
-        var existingPizza = PizzaService.Get(id);
+        var existingPizza = _pizzaService.Get(id);
         if (existingPizza is null)
             return NotFound();
+         pizza.Id = id; // Set id here as nothing was passed in 'id' attribute so it is currently null, and null or 0 can go into table if update method got called with this obj
+        _pizzaService.Update(pizza);
 
-        PizzaService.Update(pizza);
-
-        return NoContent();
+        return Ok(pizza);
     }
 
     /// <summary>
@@ -76,12 +76,12 @@ public class PizzaController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {
-        var pizza = PizzaService.Get(id);
+        var pizza = _pizzaService.Get(id);
 
         if (pizza == null)
             return NotFound();
 
-        PizzaService.Delete(id);
+        _pizzaService.Delete(id);
 
         return NoContent();
     }

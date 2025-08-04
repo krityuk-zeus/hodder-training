@@ -20,3 +20,4 @@ public class Pizza
     /// </summary>
     public bool IsGlutenFree { get; set; }
 }
+

@@ -1,78 +1,53 @@
 using ContosoPizza.Models;
+using Microsoft.Data.SqlClient;
+
+using Dapper;
+
 
 namespace ContosoPizza.Services;
 
-/// <summary>
-/// Provides in-memory data operations for pizzas.
-/// </summary>
-public static class PizzaService
+
+public class PizzaService
 {
-    /// <summary>
-    /// Static list that holds all pizza entries.
-    /// </summary>
-    static List<Pizza> Pizzas { get; }
+    private readonly string _connectionString;
 
-    /// <summary>
-    /// Used to assign unique IDs to new pizzas.
-    /// </summary>
-    static int nextId = 3;
-
-    // Static constructor to initialize some sample pizzas.
-    static PizzaService()
+    public PizzaService(IConfiguration configuration)
     {
-        Pizzas = new List<Pizza>
-        {
-            new Pizza { Id = 1, Name = "Classic Italian", IsGlutenFree = false },
-            new Pizza { Id = 2, Name = "Veggie", IsGlutenFree = true }
-        };
+        _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     }
 
-    /// <summary>
-    /// Retrieves all pizzas.
-    /// </summary>
-    /// <returns>A list of all pizzas.</returns>
-    public static List<Pizza> GetAll() => Pizzas;
-
-    /// <summary>
-    /// Retrieves a pizza by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the pizza to retrieve.</param>
-    /// <returns>The pizza if found; otherwise, null.</returns>
-    public static Pizza? Get(int id) => Pizzas.FirstOrDefault(p => p.Id == id);
-
-    /// <summary>
-    /// Adds a new pizza to the list.
-    /// </summary>
-    /// <param name="pizza">The pizza to add.</param>
-    public static void Add(Pizza pizza)
+    private SqlConnection GetConnection()
     {
-        pizza.Id = nextId++;
-        Pizzas.Add(pizza);
+        return new SqlConnection(_connectionString);
     }
 
-    /// <summary>
-    /// Deletes a pizza by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the pizza to delete.</param>
-    public static void Delete(int id)
-    {
-        var pizza = Get(id);
-        if (pizza is null)
-            return;
 
-        Pizzas.Remove(pizza);
+    public List<Pizza> GetAll()
+    {
+        using var connection = GetConnection();
+        return [.. connection.Query<Pizza>("SELECT * FROM Pizza")];
+    }
+    public Pizza? Get(int id)
+    {
+        using var connection = GetConnection();
+        return connection.QueryFirstOrDefault<Pizza>("SELECT * FROM Pizza WHERE Id = @Id", new { Id = id });
+    }
+    public void Add(Pizza pizza)
+    {
+        using var connection = GetConnection();
+        pizza.Id = connection.QuerySingle<int>("INSERT INTO Pizza (Name, IsGlutenFree) OUTPUT INSERTED.Id VALUES (@Name, @IsGlutenFree)", pizza);
+    }
+    public void Update(Pizza pizza)
+    {
+        using var connection = GetConnection();
+        connection.Execute("UPDATE Pizza SET Name = @Name, IsGlutenFree = @IsGlutenFree WHERE Id = @Id", pizza);
+    }
+    public void Delete(int id)
+    {
+        using var connection = GetConnection();
+        connection.Execute("DELETE FROM Pizza WHERE Id = @Id", new { Id = id });
     }
 
-    /// <summary>
-    /// Updates an existing pizza.
-    /// </summary>
-    /// <param name="pizza">The pizza with updated values.</param>
-    public static void Update(Pizza pizza)
-    {
-        var index = Pizzas.FindIndex(p => p.Id == pizza.Id);
-        if (index == -1)
-            return;
 
-        Pizzas[index] = pizza;
-    }
+
 }
