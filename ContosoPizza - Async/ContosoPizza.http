@@ -1,0 +1,79 @@
+@ContosoPizza_HostAddress = https://localhost:5103
+
+GET {{ContosoPizza_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{ContosoPizza_HostAddress}}/pizza/
+Accept: application/json
+
+###
+
+GET {{ContosoPizza_HostAddress}}/pizza/1
+Accept: application/json
+
+###
+
+GET {{ContosoPizza_HostAddress}}/pizza/55
+Accept: application/json
+
+###
+
+POST {{ContosoPizza_HostAddress}}/pizza/
+Content-Type: application/json
+
+{
+    "name": "Hawaiiiiii",
+    "isGlutenFree": false,
+    "price": 12.99
+}
+
+###
+
+PUT {{ContosoPizza_HostAddress}}/pizza/1
+Content-Type: application/json
+
+{
+    "name": "Bhatt",
+    "isGlutenFree": true
+}
+
+###
+
+DELETE {{ContosoPizza_HostAddress}}/pizza/12
+
+###
+
+GET {{ContosoPizza_HostAddress}}/pizza/3
+Accept: application/json
+
+###
+
+### Get paginated pizzas
+GET {{ContosoPizza_HostAddress}}/pizza/paginated?pageNumber=3&pageSize=5
+Accept: application/json
+
+###
+
+### Get sorted paginated pizzas
+GET {{ContosoPizza_HostAddress}}/pizza/paginatedsorted?pageNumber=3&pageSize=5
+Accept: application/json
+
+
+# #########################################################################
+
+###
+GET {{ContosoPizza_HostAddress}}/order
+
+
+###
+POST {{ContosoPizza_HostAddress}}/order
+Content-Type: application/json
+
+{
+  "pizzaId": 5
+}
+
+###
+GET {{ContosoPizza_HostAddress}}/order/pizza/5
